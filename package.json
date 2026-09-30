@@ -1,0 +1,13 @@
+{
+  "name": "faculty-career-advancement-tracker",
+  "version": "1.0.0",
+  "description": "Faculty Career Advancement Tracker — monorepo",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test": "npm test --prefix server"
+  }
+}

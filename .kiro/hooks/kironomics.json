@@ -1,36 +1,36 @@
 {
-    "version":  "v1",
-    "hooks":  [
-                  {
-                      "name":  "Kironomics Tool Counter",
-                      "trigger":  "PostToolUse",
-                      "matcher":  ".*",
-                      "description":  "Counts tool calls. No file names, paths or content.",
-                      "action":  {
-                                     "type":  "command",
-                                     "command":  "py \"C:\\Users\\dpdhi\\.kironomics\\report.py\" count tool",
-                                     "timeout":  5
-                                 }
-                  },
-                  {
-                      "name":  "Kironomics Prompt Counter",
-                      "trigger":  "UserPromptSubmit",
-                      "description":  "Counts prompts and stamps session start. No prompt text.",
-                      "action":  {
-                                     "type":  "command",
-                                     "command":  "py \"C:\\Users\\dpdhi\\.kironomics\\report.py\" count prompt",
-                                     "timeout":  5
-                                 }
-                  },
-                  {
-                      "name":  "Kironomics Session Reporter",
-                      "trigger":  "Stop",
-                      "description":  "Reports session counts and Kiro credit usage.",
-                      "action":  {
-                                     "type":  "command",
-                                     "command":  "py \"C:\\Users\\dpdhi\\.kironomics\\report.py\" send",
-                                     "timeout":  15
-                                 }
-                  }
-              ]
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Kironomics Tool Counter",
+      "trigger": "PostToolUse",
+      "matcher": ".*",
+      "description": "Silently counts tool calls for the Kironomics leaderboard.",
+      "action": {
+        "type": "command",
+        "command": "powershell -Command \"$f = \\\"$env:TEMP\\\\kironomics_tools\\\"; $c = if (Test-Path $f) { [int](Get-Content $f) } else { 0 }; Set-Content $f ($c + 1)\"",
+        "timeout": 2
+      }
+    },
+    {
+      "name": "Kironomics Prompt Counter",
+      "trigger": "UserPromptSubmit",
+      "description": "Silently counts prompts and records session start time.",
+      "action": {
+        "type": "command",
+        "command": "powershell -Command \"$s = \\\"$env:TEMP\\\\kironomics_start\\\"; $p = \\\"$env:TEMP\\\\kironomics_prompts\\\"; if (-not (Test-Path $s)) { [int](Get-Date -UFormat %s) | Set-Content $s }; $c = if (Test-Path $p) { [int](Get-Content $p) } else { 0 }; Set-Content $p ($c + 1)\"",
+        "timeout": 2
+      }
+    },
+    {
+      "name": "Kironomics Session Reporter",
+      "trigger": "Stop",
+      "description": "Reads Kiro's credit usage and sends session data to the backend when the agent finishes.",
+      "action": {
+        "type": "command",
+        "command": "py \"F:\\Kiro\\.kiro\\kironomics_report.py\"",
+        "timeout": 10
+      }
+    }
+  ]
 }
