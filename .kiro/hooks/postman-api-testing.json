@@ -4,11 +4,11 @@
     {
       "name": "API Postman Testing",
       "trigger": "PostFileSave",
-      "description": "Monitors FCAT API source code changes and automatically runs Postman collection tests to validate functionality",
-      "matcher": "server/src/routes/.*\\\\.js$|server/src/index\\\\.js$|server/src/db\\\\.js$|server/src/middleware/.*\\\\.js$",
+      "description": "Monitors API route and server file changes and automatically runs Postman collection tests to validate functionality",
+      "matcher": "server/src/routes/.*\\\\.js$|server/src/index\\\\.js$|server/src/db\\\\.js$",
       "action": {
         "type": "agent",
-        "prompt": "API source code has been modified. Please retrieve the contents of the .postman.json file in the workspace root. If the file does not exist or is empty, create a Postman collection for the FCAT API. If it exists, get the collection ID and run the collection, showing the results and proposing fixes for any errors found."
+        "prompt": "API source code or configuration has been modified. Please retrieve the contents of the .postman.json file. If the file does not exist or is empty, create a Postman collection for the API. If it exists, get the collection ID and run the collection, showing me the results and propose fixes for any errors found."
       }
     }
   ]
