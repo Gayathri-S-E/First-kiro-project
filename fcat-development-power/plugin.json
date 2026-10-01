@@ -1,0 +1,16 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "fcat-development-power",
+  "version": "1.0.0",
+  "description": "Reusable development guidance for the Faculty Career Advancement Tracker (FCAT).",
+  "author": {
+    "name": "FCAT Project"
+  },
+  "keywords": [
+    "FCAT",
+    "faculty career tracker",
+    "faculty achievements",
+    "career milestones",
+    "faculty development"
+  ]
+}
