@@ -1,0 +1,3 @@
+server/.env
+server/fcat.db
+node_modules/
