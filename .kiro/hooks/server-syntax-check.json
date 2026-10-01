@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Server Syntax Check",
+      "trigger": "PostFileSave",
+      "description": "Runs node --check on any server/src JS file after it is saved. Catches syntax errors immediately, before the server is restarted.",
+      "matcher": "server/src/.*\\.js$",
+      "action": {
+        "type": "command",
+        "command": "node --check \"${file}\"",
+        "timeout": 10
+      }
+    }
+  ]
+}
