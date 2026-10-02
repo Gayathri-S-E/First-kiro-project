@@ -21,6 +21,7 @@ app.use("/api/achievements", require("./routes/achievements"));
 app.use("/api/milestones",   require("./routes/milestones"));
 app.use("/api/admin",        require("./routes/admin"));
 app.use("/api/reports",      require("./routes/reports"));
+app.use("/api/coordinator",  require("./routes/coordinator"));
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));

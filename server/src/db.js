@@ -87,19 +87,54 @@ async function initDb() {
 }
 
 function createSchema() {
-  // Users — faculty and admin/HOD
+  // Users — faculty, admin, HOD, and coordinator
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       name        TEXT    NOT NULL,
       email       TEXT    NOT NULL UNIQUE,
       password    TEXT    NOT NULL,
-      role        TEXT    NOT NULL DEFAULT 'faculty' CHECK(role IN ('faculty','admin','hod')),
+      role        TEXT    NOT NULL DEFAULT 'faculty' CHECK(role IN ('faculty','admin','hod','coordinator')),
       department  TEXT,
       designation TEXT,
       created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
     )
   `);
+
+  // ── Migration: widen role CHECK to include 'coordinator' on existing DBs ──
+  // CREATE TABLE IF NOT EXISTS does not alter an existing table's CHECK
+  // constraint. We inspect sqlite_master and, if the stored DDL does not yet
+  // contain 'coordinator', rebuild the table with the new constraint while
+  // preserving every existing row.
+  //
+  // Safety measures:
+  //   • PRAGMA foreign_keys = OFF during the swap (SQLite requirement).
+  //   • All existing rows are copied verbatim via INSERT INTO ... SELECT *.
+  //   • The guard runs exactly once: subsequent startups find 'coordinator'
+  //     in the DDL and skip the block entirely.
+  const usersDdl = get(
+    "SELECT sql FROM sqlite_master WHERE type='table' AND name='users'"
+  );
+  if (usersDdl && !usersDdl.sql.includes("coordinator")) {
+    db.run("PRAGMA foreign_keys = OFF");
+    db.run(`
+      CREATE TABLE users_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT    NOT NULL,
+        email       TEXT    NOT NULL UNIQUE,
+        password    TEXT    NOT NULL,
+        role        TEXT    NOT NULL DEFAULT 'faculty'
+                    CHECK(role IN ('faculty','admin','hod','coordinator')),
+        department  TEXT,
+        designation TEXT,
+        created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    db.run("INSERT INTO users_new SELECT * FROM users");
+    db.run("DROP TABLE users");
+    db.run("ALTER TABLE users_new RENAME TO users");
+    db.run("PRAGMA foreign_keys = ON");
+  }
 
   // Achievement categories (configurable labels, not hardcoded logic)
   db.run(`
