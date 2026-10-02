@@ -41,12 +41,13 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const isAdmin = user?.role === "admin";
-  const isHod   = user?.role === "hod";
-  const isStaff = isAdmin || isHod;
+  const isAdmin       = user?.role === "admin";
+  const isHod         = user?.role === "hod";
+  const isStaff       = isAdmin || isHod;          // unchanged — coordinator is NOT staff
+  const isCoordinator = user?.role === "coordinator";
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, isAdmin, isHod, isStaff }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, isAdmin, isHod, isStaff, isCoordinator }}>
       {children}
     </AuthContext.Provider>
   );

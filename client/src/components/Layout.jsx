@@ -15,7 +15,7 @@ const Icons = {
 };
 
 export default function Layout({ children }) {
-  const { user, logout, isStaff } = useAuth();
+  const { user, logout, isStaff, isCoordinator } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate("/login"); };
@@ -33,7 +33,7 @@ export default function Layout({ children }) {
         </div>
 
         <nav className="sidebar-nav">
-          {!isStaff && (
+          {!isStaff && !isCoordinator && (
             <>
               <div className="nav-section">Faculty</div>
               <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/dashboard">
@@ -68,6 +68,15 @@ export default function Layout({ children }) {
               </NavLink>
               <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/admin/users">
                 {Icons.users} Manage Users
+              </NavLink>
+            </>
+          )}
+
+          {isCoordinator && (
+            <>
+              <div className="nav-section">Coordinator</div>
+              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/coordinator/dashboard">
+                {Icons.overview} Dashboard
               </NavLink>
             </>
           )}

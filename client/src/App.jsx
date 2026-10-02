@@ -19,6 +19,9 @@ import MilestoneConfig    from "./pages/admin/MilestoneConfig";
 import ManageUsers        from "./pages/admin/ManageUsers";
 import FacultyProgress    from "./pages/admin/FacultyProgress";
 
+// Coordinator pages
+import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
+
 // ─── Route guards ────────────────────────────────────────────────────────────
 
 function RequireAuth({ children }) {
@@ -36,19 +39,36 @@ function RequireStaff({ children }) {
   return children;
 }
 
+// RequireFaculty: faculty only.
+// Redirects isStaff → /admin/overview (unchanged).
+// Redirects isCoordinator → /coordinator/dashboard (new — prevents coordinators
+// landing on faculty pages since they are not isStaff).
 function RequireFaculty({ children }) {
-  const { user, loading, isStaff } = useAuth();
-  if (loading)  return <div className="loading"><div className="spinner"/>Loading…</div>;
-  if (!user)    return <Navigate to="/login" replace />;
-  if (isStaff)  return <Navigate to="/admin/overview" replace />;
+  const { user, loading, isStaff, isCoordinator } = useAuth();
+  if (loading)        return <div className="loading"><div className="spinner"/>Loading…</div>;
+  if (!user)          return <Navigate to="/login" replace />;
+  if (isStaff)        return <Navigate to="/admin/overview" replace />;
+  if (isCoordinator)  return <Navigate to="/coordinator/dashboard" replace />;
   return children;
 }
 
+// RequireCoordinator: coordinator role only.
+function RequireCoordinator({ children }) {
+  const { user, loading, isCoordinator } = useAuth();
+  if (loading)       return <div className="loading"><div className="spinner"/>Loading…</div>;
+  if (!user)         return <Navigate to="/login" replace />;
+  if (!isCoordinator) return <Navigate to="/login" replace />;
+  return children;
+}
+
+// RootRedirect: coordinator branch added before the faculty fallback.
 function RootRedirect() {
-  const { user, loading, isStaff } = useAuth();
-  if (loading) return <div className="loading"><div className="spinner"/>Loading…</div>;
-  if (!user)   return <Navigate to="/login" replace />;
-  return <Navigate to={isStaff ? "/admin/overview" : "/dashboard"} replace />;
+  const { user, loading, isStaff, isCoordinator } = useAuth();
+  if (loading)        return <div className="loading"><div className="spinner"/>Loading…</div>;
+  if (!user)          return <Navigate to="/login" replace />;
+  if (isStaff)        return <Navigate to="/admin/overview" replace />;
+  if (isCoordinator)  return <Navigate to="/coordinator/dashboard" replace />;
+  return              <Navigate to="/dashboard" replace />;
 }
 
 // ─── App ─────────────────────────────────────────────────────────────────────
@@ -102,6 +122,11 @@ function AppRoutes() {
       }/>
       <Route path="/admin/report/:userId" element={
         <RequireStaff><Layout><Report /></Layout></RequireStaff>
+      }/>
+
+      {/* Coordinator routes */}
+      <Route path="/coordinator/dashboard" element={
+        <RequireCoordinator><Layout><CoordinatorDashboard /></Layout></RequireCoordinator>
       }/>
 
       {/* Catch-all */}
