@@ -1,0 +1,491 @@
+{
+  "info": {
+    "name": "FCAT API",
+    "description": "Faculty Career Advancement Tracker — REST API collection.\nBase URL is stored in the {{base_url}} collection variable (default: http://localhost:3001).\nAfter a successful login, copy the returned token into the {{token}} variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001",
+      "type": "string",
+      "description": "FCAT server base URL. Change to your deployed host for production."
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT obtained from POST /api/auth/login. Paste the token value here (without 'Bearer ')."
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication routes — /api/auth/*",
+      "item": [
+        {
+          "name": "Register (faculty)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.edu\",\n  \"password\": \"changeme\",\n  \"department\": \"Computer Science\",\n  \"designation\": \"Assistant Professor\"\n}"
+            },
+            "description": "POST /api/auth/register — Self-registration; always creates a 'faculty' account.\nReturns { token, user }.\nPassing role:'admin' or role:'hod' returns 403."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) {",
+                  "  pm.collectionVariables.set('token', data.token);",
+                  "  console.log('Token saved to collection variable: token');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"admin@fcat.edu\",\n  \"password\": \"admin123\"\n}"
+            },
+            "description": "POST /api/auth/login — Returns { token, user }.\nThe test script automatically saves the token to the {{token}} collection variable.\nSeed credentials: admin@fcat.edu/admin123, hod@fcat.edu/hod123, priya@fcat.edu/faculty123."
+          }
+        },
+        {
+          "name": "Get Current User (/me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "GET /api/auth/me — Returns the user object for the bearer token.\nRequires: Authorization: Bearer {{token}}."
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"department\": \"Information Technology\",\n  \"designation\": \"Associate Professor\"\n}"
+            },
+            "description": "PUT /api/auth/profile — Updates own name, department, designation, or password.\nOmit password to leave it unchanged."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Achievements",
+      "description": "Achievement CRUD routes — /api/achievements/*",
+      "item": [
+        {
+          "name": "List Achievement Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements/types",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements", "types"]
+            },
+            "description": "GET /api/achievements/types — Returns the 7 fixed achievement categories.\nUse the 'code' values (e.g. 'publication') as type_code in other requests."
+          }
+        },
+        {
+          "name": "List Achievements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements"],
+              "query": [
+                { "key": "type_code", "value": "publication", "disabled": true, "description": "Filter by category code" },
+                { "key": "status",    "value": "pending",     "disabled": true, "description": "Filter by status: pending | approved | rejected" },
+                { "key": "user_id",   "value": "2",           "disabled": true, "description": "Admin/HOD only: filter by faculty user ID" }
+              ]
+            },
+            "description": "GET /api/achievements — Faculty sees own records only; admin/hod see all.\nSupports query params: type_code, status, user_id (admin/hod)."
+          }
+        },
+        {
+          "name": "Get Achievement by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements", "1"]
+            },
+            "description": "GET /api/achievements/:id — Returns a single achievement with its files array.\nFaculty may only fetch their own achievements."
+          }
+        },
+        {
+          "name": "Create Achievement",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title",         "value": "Research Paper on Distributed Systems",    "type": "text" },
+                { "key": "type_code",     "value": "publication",                              "type": "text" },
+                { "key": "description",   "value": "Published in IEEE Transactions, Vol. 12.", "type": "text" },
+                { "key": "date_achieved", "value": "2026-08-15",                               "type": "text" },
+                { "key": "issuer",        "value": "IEEE",                                     "type": "text" },
+                { "key": "url",           "value": "https://doi.org/10.1109/example",          "type": "text" },
+                { "key": "files",         "value": "",                                         "type": "file", "description": "Optional proof files (PDF/JPG/PNG/DOC/DOCX, max 5, 10 MB each)", "disabled": true }
+              ]
+            },
+            "description": "POST /api/achievements — Creates a new achievement (status defaults to 'pending').\nUses multipart/form-data so proof files can be attached.\nRequired: title, type_code."
+          }
+        },
+        {
+          "name": "Update Achievement (pending only)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements", "1"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title",       "value": "Updated Title",     "type": "text" },
+                { "key": "description", "value": "Revised abstract.", "type": "text" },
+                { "key": "files",       "value": "",                  "type": "file", "description": "Append additional proof files", "disabled": true }
+              ]
+            },
+            "description": "PUT /api/achievements/:id — Faculty may only edit their own pending achievements.\nReturns 400 if status is 'approved' or 'rejected'."
+          }
+        },
+        {
+          "name": "Delete Achievement (pending only)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/achievements/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "achievements", "1"]
+            },
+            "description": "DELETE /api/achievements/:id — Faculty may only delete their own pending achievements.\nAlso removes proof files from disk. Returns { success: true }."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Milestones",
+      "description": "Milestone template routes — /api/milestones/*",
+      "item": [
+        {
+          "name": "List Milestones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/milestones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones"]
+            },
+            "description": "GET /api/milestones — Returns all milestone templates. Accessible to all roles."
+          }
+        },
+        {
+          "name": "Get Milestone by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/milestones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones", "1"]
+            },
+            "description": "GET /api/milestones/:id — Returns a single milestone template."
+          }
+        },
+        {
+          "name": "Get Progress for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/milestones/progress/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones", "progress", "2"]
+            },
+            "description": "GET /api/milestones/progress/:userId — Returns milestone progress computed live.\nFaculty may only request their own userId; admin/hod can request any.\nReturns { user, progress[] } where each item includes current_count, percentage, achieved."
+          }
+        },
+        {
+          "name": "Create Milestone (admin/hod)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/milestones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"5 Publications Required\",\n  \"description\": \"Must publish 5 peer-reviewed papers.\",\n  \"type_code\": \"publication\",\n  \"required_count\": 5,\n  \"time_window_months\": 36\n}"
+            },
+            "description": "POST /api/milestones — Creates a new milestone template. Requires admin or hod role.\ntime_window_months is optional; omit or set to null for no time restriction."
+          }
+        },
+        {
+          "name": "Update Milestone (admin/hod)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/milestones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"required_count\": 6,\n  \"time_window_months\": 48\n}"
+            },
+            "description": "PUT /api/milestones/:id — Updates a milestone template. Requires admin or hod role."
+          }
+        },
+        {
+          "name": "Delete Milestone (admin/hod)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/milestones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "milestones", "1"]
+            },
+            "description": "DELETE /api/milestones/:id — Removes the milestone template. Requires admin or hod.\nDoes not affect any achievement records."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Admin/HOD management routes — /api/admin/*\nAll routes require admin or hod role except where noted.",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                { "key": "department", "value": "Computer Science", "disabled": true, "description": "Filter by department name" },
+                { "key": "role",       "value": "faculty",          "disabled": true, "description": "Filter by role: faculty | admin | hod" }
+              ]
+            },
+            "description": "GET /api/admin/users — Returns all user accounts. Supports ?department and ?role filters."
+          }
+        },
+        {
+          "name": "Create User (admin only)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"New HOD User\",\n  \"email\": \"newhod@fcat.edu\",\n  \"password\": \"changeme\",\n  \"role\": \"hod\",\n  \"department\": \"Electronics\",\n  \"designation\": \"Professor\"\n}"
+            },
+            "description": "POST /api/admin/users — Creates an account with any role. Requires admin (not hod).\nReturns 403 if called by a hod token."
+          }
+        },
+        {
+          "name": "Delete User (admin only)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "3"]
+            },
+            "description": "DELETE /api/admin/users/:id — Deletes a user account. Requires admin.\nReturns 400 if the admin tries to delete their own account.\nReturns 403 if called by a hod token."
+          }
+        },
+        {
+          "name": "List All Achievements (review queue)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/achievements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "achievements"],
+              "query": [
+                { "key": "status",    "value": "pending",     "disabled": true, "description": "Filter by status" },
+                { "key": "type_code", "value": "publication", "disabled": true, "description": "Filter by category code" },
+                { "key": "user_id",   "value": "2",           "disabled": true, "description": "Filter by faculty user ID" }
+              ]
+            },
+            "description": "GET /api/admin/achievements — Returns all achievements with file attachments.\nSupports optional query filters: status, type_code, user_id."
+          }
+        },
+        {
+          "name": "Review Achievement (approve/reject)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/achievements/1/review",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "achievements", "1", "review"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"status\": \"approved\",\n  \"review_note\": \"Verified against published record.\"\n}"
+            },
+            "description": "POST /api/admin/achievements/:id/review — Sets status to 'approved' or 'rejected'.\nrecords reviewed_by, review_note, and reviewed_at.\nreview_note is required by the frontend for rejections; backend accepts it as optional."
+          }
+        },
+        {
+          "name": "Faculty Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/overview",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "overview"]
+            },
+            "description": "GET /api/admin/overview — Returns one row per faculty member with byType breakdown and totalApproved count."
+          }
+        },
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/departments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "departments"]
+            },
+            "description": "GET /api/admin/departments — Returns an array of distinct department name strings."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Report data endpoints — /api/reports/*",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/dashboard/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "dashboard", "2"]
+            },
+            "description": "GET /api/reports/dashboard/:userId — Lightweight stats used by the Dashboard page.\nReturns: statusCounts, typeCounts (approved), recent (last 5), monthly (last 12 months).\nFaculty may only request their own userId."
+          }
+        },
+        {
+          "name": "Career Report Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/faculty/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "faculty", "2"]
+            },
+            "description": "GET /api/reports/faculty/:userId — Full report data used by Report.jsx for PDF export.\nReturns: user, achievementsByType (approved only), summary, milestoneProgress, generatedAt.\nFaculty may only request their own userId."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "Server health check — no authentication required",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "GET /api/health — Unauthenticated. Returns { status: 'ok', timestamp: '...' }.\nUseful to confirm the server is running before running other requests."
+          }
+        }
+      ]
+    }
+  ]
+}
