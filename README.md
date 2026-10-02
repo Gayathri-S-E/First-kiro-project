@@ -1,86 +1,113 @@
 # Faculty Career Advancement Tracker (FCAT)
 
-A simple, professional web application for tracking faculty achievements, career milestones, and generating career profile reports.
+A professional intranet web application for academic institutions. Faculty members record achievements, upload proof documents, track progress against institution-defined career milestones, and generate PDF career profile reports. Department Heads (HODs) and Admins review submissions and configure milestone requirements.
+
+---
+
+## Workflow
+
+```
+Faculty Login → Dashboard → Add Achievement → Upload Proof
+    → Career Milestones → Progress Tracking → Report Generation
+    → Admin/HOD Verification
+```
+
+---
+
+## Achievement Categories
+
+| Category | type_code |
+|---|---|
+| Publications | `publication` |
+| Certifications | `certification` |
+| Conferences | `conference` |
+| Workshops | `workshop` |
+| Research Projects | `research` |
+| Patents | `patent` |
+| Academic / Teaching Activities | `teaching` |
+
+These seven categories are seeded at startup and are not editable via the UI.
+
+---
 
 ## Features
 
-- **Faculty**: Add achievements (publications, certifications, conferences, workshops, research, patents, teaching), upload proof documents, track milestone progress, generate PDF career reports
-- **Admin/HOD**: Verify achievements (approve/reject), configure milestone requirements, view faculty overview and progress
+### Faculty
+- Register and manage a personal profile (name, department, designation, password)
+- Submit achievements with title, category, date, issuer, description, and URL/DOI
+- Attach up to 5 proof files per achievement (PDF, JPG, PNG, DOC, DOCX — max 10 MB each)
+- Edit or delete own **pending** achievements
+- Filter achievement list by category and status
+- View rejection notes inline on rejected submissions
+- Track progress against every active milestone with live percentage and achieved/not-achieved status
+- View an overall progress summary (total milestones, achieved count, completion %)
+- Generate and download a PDF career profile report
+
+### Admin / HOD
+- Approve or reject pending achievements with an optional review note
+- Configure milestone templates (name, category, required count, optional time window)
+- View a per-faculty achievement overview broken down by category
+- View any faculty member's full progress and generate their career report
+- **Admin only:** create and delete user accounts of any role
+
+---
 
 ## Tech Stack
 
-| Layer     | Technology                               |
-|-----------|------------------------------------------|
-| Frontend  | React 18 + Vite, Recharts, jsPDF         |
-| Backend   | Node.js + Express                        |
-| Database  | SQLite via sql.js (pure JS, no native build needed) |
-| Auth      | JWT + bcryptjs                           |
-| Uploads   | Multer (local disk, `server/uploads/`)   |
-
-## Getting Started
-
-### 1. Install dependencies
-
-```powershell
-cd server; npm install
-cd ../client; npm install
-```
-
-### 2. Seed demo data
-
-```powershell
-cd server; npm run seed
-```
-
-Demo accounts:
-| Email | Password | Role |
+| Layer | Technology | Version |
 |---|---|---|
-| admin@fcat.edu | admin123 | Admin |
-| hod@fcat.edu | hod123 | HOD |
-| priya@fcat.edu | faculty123 | Faculty |
-| arjun@fcat.edu | faculty123 | Faculty |
-| meena@fcat.edu | faculty123 | Faculty |
+| Frontend framework | React | 18.3.1 |
+| Frontend build | Vite | 5.3.4 |
+| Client routing | react-router-dom | 6.24.1 |
+| HTTP client | axios | 1.7.2 |
+| Forms | react-hook-form | 7.52.1 |
+| Charts | recharts | 2.12.7 |
+| PDF export | jsPDF + jspdf-autotable | 2.5.1 / 3.8.2 |
+| Backend framework | Express | 4.19.2 |
+| Database | sql.js (pure-JS SQLite) | 1.12.0 |
+| Authentication | jsonwebtoken + bcryptjs | 9.0.2 / 2.4.3 |
+| File upload | multer | 1.4.5-lts.1 |
+| Dev server | nodemon | 3.1.3 |
 
-### 3. Run development servers
+No native build tools (node-gyp) are required. sql.js is a pure-JS SQLite port.
 
-Open two terminals:
-
-```powershell
-# Terminal 1 — backend (port 3001)
-cd server; npm run dev
-
-# Terminal 2 — frontend (port 5173)
-cd client; npm run dev
-```
-
-Then open http://localhost:5173
+---
 
 ## Project Structure
 
 ```
-Kiro/
+First-kiro-project/
+├── package.json              Root orchestrator scripts
+├── .postman.json             Postman collection (import to test the API)
 ├── server/
-│   ├── src/
-│   │   ├── index.js          Express app entry
-│   │   ├── db.js             SQLite (sql.js) setup + schema
-│   │   ├── seed.js           Demo data seeder
-│   │   ├── middleware/
-│   │   │   └── auth.js       JWT verify + role guard
-│   │   └── routes/
-│   │       ├── auth.js       Login, register, profile
-│   │       ├── achievements.js CRUD + file upload
-│   │       ├── milestones.js  Templates + progress
-│   │       ├── admin.js       Verification + overview
-│   │       └── reports.js     Dashboard + career report data
+│   ├── .env                  Environment variables (not committed)
+│   ├── fcat.db               SQLite database file (not committed; regenerated by seed)
 │   ├── uploads/              Uploaded proof files
-│   └── fcat.db               SQLite database file
-│
+│   └── src/
+│       ├── index.js          Express app entry, middleware, route mounting
+│       ├── db.js             sql.js initialisation, schema, CRUD helpers
+│       ├── seed.js           Demo data seeder (5 accounts, 8 milestones, 15 achievements)
+│       ├── middleware/
+│       │   └── auth.js       JWT verification + role guard middleware
+│       └── routes/
+│           ├── auth.js       /api/auth/* — login, register, profile
+│           ├── achievements.js /api/achievements/* — CRUD + file upload
+│           ├── milestones.js /api/milestones/* — templates + progress
+│           ├── admin.js      /api/admin/* — verification, users, overview
+│           └── reports.js    /api/reports/* — dashboard stats + career report data
 └── client/
     └── src/
-        ├── App.jsx           Routes + guards
-        ├── context/          AuthContext
-        ├── api/              Axios client
-        ├── components/       Layout, FileUpload, ProgressBar, StatusBadge
+        ├── App.jsx           BrowserRouter, route definitions, route guards
+        ├── index.css         Design system (CSS custom properties, all component styles)
+        ├── api/
+        │   └── client.js     Axios instance with JWT + 401 interceptors
+        ├── context/
+        │   └── AuthContext.jsx  Global auth state (user, login, logout, register)
+        ├── components/
+        │   ├── Layout.jsx    Fixed sidebar shell with role-conditional nav
+        │   ├── FileUpload.jsx Drag-and-drop proof file picker
+        │   ├── ProgressBar.jsx Milestone progress bar with aria attributes
+        │   └── StatusBadge.jsx Pending / approved / rejected badge
         └── pages/
             ├── Login.jsx
             ├── Dashboard.jsx
@@ -97,6 +124,169 @@ Kiro/
                 └── FacultyProgress.jsx
 ```
 
+---
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js (LTS recommended)
+- npm
+
+### 1. Install dependencies
+
+Run from the repository root:
+
+```bash
+cd server && npm install
+cd ../client && npm install
+```
+
+### 2. Configure environment variables
+
+Create `server/.env` (this file is git-ignored):
+
+```
+PORT=3001
+JWT_SECRET=your_strong_secret_here
+JWT_EXPIRES_IN=7d
+DB_PATH=./fcat.db
+UPLOADS_DIR=./uploads
+```
+
+> **Do not commit `server/.env` or `server/fcat.db`.** Both are listed in `.gitignore`.
+
+### 3. Seed demo data
+
+Run from the repository root:
+
+```bash
+npm run seed
+```
+
+This creates `server/fcat.db` with 5 demo accounts, 8 milestone templates, and 15 sample achievements. Re-running on an existing database is safe — seed guards prevent duplicate rows.
+
+### 4. Run development servers
+
+Run both commands from the repository root (two terminals):
+
+```bash
+# Terminal 1 — backend API (port 3001)
+npm run dev:server
+
+# Terminal 2 — frontend dev server (port 5173)
+npm run dev:client
+```
+
+Open **http://localhost:5173** in your browser.
+
+The Vite dev server proxies `/api` and `/uploads` to `http://localhost:3001`, so no CORS configuration is needed during development.
+
+### 5. Build for production
+
+```bash
+npm run build:client
+```
+
+Outputs to `client/dist/`. Set `NODE_ENV=production` on the server and Express will serve the built SPA automatically.
+
+### 6. Run tests
+
+```bash
+npm test
+```
+
+Runs the server-side test suite (`server/src/__tests__/`) using Node's built-in test runner. No additional test framework installation is required.
+
+---
+
+## Demo Accounts
+
+Seeded by `npm run seed`:
+
+| Email | Password | Role |
+|---|---|---|
+| admin@fcat.edu | admin123 | Admin |
+| hod@fcat.edu | hod123 | HOD |
+| priya@fcat.edu | faculty123 | Faculty |
+| arjun@fcat.edu | faculty123 | Faculty |
+| meena@fcat.edu | faculty123 | Faculty |
+
+Faculty accounts self-register via the login page. Admin and HOD accounts can only be created by an existing Admin through the Manage Users panel.
+
+---
+
+## API Overview
+
+All routes are prefixed `/api`. Protected routes require `Authorization: Bearer <JWT>`.
+
+| Domain | Method | Path | Access | Description |
+|---|---|---|---|---|
+| **Auth** | POST | `/api/auth/register` | Public | Register a faculty account |
+| | POST | `/api/auth/login` | Public | Login; returns JWT + user |
+| | GET | `/api/auth/me` | Any | Current user from token |
+| | PUT | `/api/auth/profile` | Any | Update own profile |
+| **Achievements** | GET | `/api/achievements/types` | Any | List 7 achievement categories |
+| | GET | `/api/achievements` | Any | List achievements (faculty: own; admin/hod: all) |
+| | GET | `/api/achievements/:id` | Any | Single achievement with files |
+| | POST | `/api/achievements` | Any | Create achievement + upload proof files |
+| | PUT | `/api/achievements/:id` | Any | Update pending achievement |
+| | DELETE | `/api/achievements/:id` | Any | Delete pending achievement + files |
+| **Milestones** | GET | `/api/milestones` | Any | List all milestone templates |
+| | GET | `/api/milestones/:id` | Any | Single milestone template |
+| | POST | `/api/milestones` | Admin / HOD | Create milestone template |
+| | PUT | `/api/milestones/:id` | Admin / HOD | Update milestone template |
+| | DELETE | `/api/milestones/:id` | Admin / HOD | Delete milestone template |
+| | GET | `/api/milestones/progress/:userId` | Any* | Compute live milestone progress |
+| **Admin** | GET | `/api/admin/users` | Admin / HOD | List all users |
+| | POST | `/api/admin/users` | Admin only | Create any-role account |
+| | DELETE | `/api/admin/users/:id` | Admin only | Delete account |
+| | GET | `/api/admin/achievements` | Admin / HOD | All achievements (filterable) |
+| | POST | `/api/admin/achievements/:id/review` | Admin / HOD | Approve or reject |
+| | GET | `/api/admin/overview` | Admin / HOD | Per-faculty achievement summary |
+| | GET | `/api/admin/departments` | Admin / HOD | List distinct departments |
+| **Reports** | GET | `/api/reports/dashboard/:userId` | Any* | Dashboard stats |
+| | GET | `/api/reports/faculty/:userId` | Any* | Full career report data for PDF |
+| **Health** | GET | `/api/health` | Public | Server health check |
+
+\* Faculty may only request their own `userId`. Admin/HOD may request any.
+
+A Postman collection covering all endpoints is available in `.postman.json` at the project root. Import it into Postman and set the `base_url` and `token` collection variables to get started.
+
+---
+
 ## Configuration
 
-All milestone requirements are configured by Admin/HOD through the UI — nothing is hardcoded. Adjust `server/.env` for port, JWT secret, and paths.
+All milestone thresholds are configured by Admin/HOD through the Milestone Config UI — nothing is hardcoded. Changes take effect immediately; no redeployment is needed.
+
+Environment variables are loaded from `server/.env` via `dotenv`. See the table above under **Local Setup → Configure environment variables** for the full list of supported keys.
+
+---
+
+## Security Notes
+
+- Passwords are hashed with bcrypt (cost factor 10). No password value is ever returned in an API response.
+- JWTs are signed with `JWT_SECRET` from `server/.env`. Use a strong, unique secret in production.
+- **`server/.env` and `server/fcat.db` are git-ignored and must never be committed.**
+- Uploaded proof files are stored on local disk in `server/uploads/`. In a production deployment, ensure the uploads directory is outside the web root or protected by the authentication middleware.
+- `PRAGMA foreign_keys = ON` is set at database startup; all FK constraints are enforced.
+
+---
+
+## Kiro Development Artifacts
+
+This project was developed with [Kiro](https://kiro.dev) and includes the following artifacts under `.kiro/`:
+
+| Artifact | Path | Purpose |
+|---|---|---|
+| Spec — Requirements | `.kiro/specs/faculty-career-tracker/requirements.md` | Full functional and non-functional requirements |
+| Spec — Design | `.kiro/specs/faculty-career-tracker/design.md` | Architecture, schema, API design, and design decisions |
+| Spec — Tasks | `.kiro/specs/faculty-career-tracker/tasks.md` | Implementation and verification task checklist (12 phases) |
+| Steering — Project overview | `.kiro/steering/project-overview.md` | Loaded into every session as ambient project context |
+| Steering — Tech stack | `.kiro/steering/tech-stack.md` | Package versions and dev commands |
+| Steering — Backend conventions | `.kiro/steering/backend-conventions.md` | DB helpers, route patterns, response shapes |
+| Steering — Frontend conventions | `.kiro/steering/frontend-conventions.md` | Component library, routing, CSS rules |
+| Steering — Extension rules | `.kiro/steering/extension-rules.md` | Safe patterns for adding features without breaking existing ones |
+| Custom agent | `.kiro/agents/fcat-development.json` | FCAT Development Agent — pre-loaded with all steering files and permission rules |
+| Hook — Syntax check | `.kiro/hooks/server-syntax-check.json` | Runs `node --check` on any modified server JS file after save |
+| Hook — API testing | `.kiro/hooks/postman-api-testing.json` | Triggers Postman collection run when API route or middleware files are saved |
