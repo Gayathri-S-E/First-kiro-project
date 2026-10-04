@@ -193,6 +193,23 @@ function createSchema() {
     )
   `);
 
+  // Growth plans — coordinator-managed development plans for faculty
+  db.run(`
+    CREATE TABLE IF NOT EXISTS growth_plans (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      faculty_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title       TEXT    NOT NULL,
+      description TEXT,
+      target_date TEXT,
+      status      TEXT    NOT NULL DEFAULT 'planned'
+                  CHECK(status IN ('planned','in_progress','completed','cancelled')),
+      notes       TEXT,
+      created_by  INTEGER NOT NULL REFERENCES users(id),
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
   // Seed default achievement types
   const existing = get("SELECT id FROM achievement_types LIMIT 1");
   if (!existing) {
