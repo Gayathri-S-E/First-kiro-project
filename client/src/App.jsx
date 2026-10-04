@@ -21,6 +21,7 @@ import FacultyProgress    from "./pages/admin/FacultyProgress";
 
 // Coordinator pages
 import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
+import GrowthPlans          from "./pages/coordinator/GrowthPlans";
 
 // ─── Route guards ────────────────────────────────────────────────────────────
 
@@ -127,6 +128,9 @@ function AppRoutes() {
       {/* Coordinator routes */}
       <Route path="/coordinator/dashboard" element={
         <RequireCoordinator><Layout><CoordinatorDashboard /></Layout></RequireCoordinator>
+      }/>
+      <Route path="/coordinator/growth-plans" element={
+        <RequireCoordinator><Layout><GrowthPlans /></Layout></RequireCoordinator>
       }/>
 
       {/* Catch-all */}

@@ -78,6 +78,9 @@ export default function Layout({ children }) {
               <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/coordinator/dashboard">
                 {Icons.overview} Dashboard
               </NavLink>
+              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/coordinator/growth-plans">
+                {Icons.milestone} Growth Plans
+              </NavLink>
             </>
           )}
         </nav>
