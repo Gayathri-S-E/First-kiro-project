@@ -149,6 +149,7 @@ export default function ManageUsers() {
                     <label>Role <span className="required">*</span></label>
                     <select {...register("role", { required: "Required" })}>
                       <option value="faculty">Faculty</option>
+                      <option value="coordinator">Coordinator</option>
                       <option value="hod">HOD</option>
                       <option value="admin">Admin</option>
                     </select>

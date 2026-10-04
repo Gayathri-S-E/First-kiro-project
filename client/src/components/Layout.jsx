@@ -12,6 +12,16 @@ const Icons = {
   users:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   config:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>,
   overview:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  analytics:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+  growthplan:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>,
+};
+
+// Role identity labels shown below the logo
+const ROLE_LABELS = {
+  faculty:     "Academic Career",
+  coordinator: "Faculty Development",
+  admin:       "Institutional Management",
+  hod:         "Department Management",
 };
 
 export default function Layout({ children }) {
@@ -24,79 +34,70 @@ export default function Layout({ children }) {
     ? user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()
     : "?";
 
+  const role       = user?.role || "faculty";
+  const roleLabel  = ROLE_LABELS[role] || role;
+
+  const navCls = ({ isActive }) => "nav-link" + (isActive ? " active" : "");
+
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-role={role}>
       <aside className="sidebar">
+        {/* Logo */}
         <div className="sidebar-logo">
-          <h1>Career Advancement Tracker</h1>
-          <span>Faculty Management</span>
+          <h1>FCAT</h1>
+          <span>Faculty Career Advancement</span>
         </div>
 
-        <nav className="sidebar-nav">
+        {/* Role identity strip */}
+        <div className={`sidebar-role-strip role-${role}`}>
+          {roleLabel}
+        </div>
+
+        {/* Navigation */}
+        <nav className="sidebar-nav" aria-label="Main navigation">
           {!isStaff && !isCoordinator && (
             <>
-              <div className="nav-section">Faculty</div>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/dashboard">
-                {Icons.dashboard} Dashboard
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/achievements">
-                {Icons.achievement} Achievements
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/milestones">
-                {Icons.milestone} Milestones
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/progress">
-                {Icons.progress} My Progress
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/report">
-                {Icons.report} Generate Report
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/analytics">
-                {Icons.progress} Analytics
-              </NavLink>
+              <div className="nav-section">Career</div>
+              <NavLink className={navCls} to="/dashboard"    aria-label="Dashboard">    {Icons.dashboard}  Dashboard</NavLink>
+              <NavLink className={navCls} to="/achievements" aria-label="Achievements"> {Icons.achievement} Achievements</NavLink>
+              <NavLink className={navCls} to="/milestones"   aria-label="Milestones">   {Icons.milestone}  Milestones</NavLink>
+              <NavLink className={navCls} to="/progress"     aria-label="My Progress">  {Icons.progress}   My Progress</NavLink>
+              <NavLink className={navCls} to="/analytics"    aria-label="Analytics">    {Icons.analytics}  Analytics</NavLink>
+              <NavLink className={navCls} to="/report"       aria-label="Career Report">{Icons.report}     Career Report</NavLink>
             </>
           )}
 
           {isStaff && (
             <>
-              <div className="nav-section">Admin</div>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/admin/overview">
-                {Icons.overview} Faculty Overview
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/admin/verify">
-                {Icons.verify} Verify Achievements
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/admin/milestones">
-                {Icons.config} Milestone Config
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/admin/users">
-                {Icons.users} Manage Users
-              </NavLink>
+              <div className="nav-section">Management</div>
+              <NavLink className={navCls} to="/admin/overview">   {Icons.overview}   Faculty Overview</NavLink>
+              <NavLink className={navCls} to="/admin/verify">     {Icons.verify}     Verify Achievements</NavLink>
+              <NavLink className={navCls} to="/admin/milestones"> {Icons.config}     Milestone Config</NavLink>
+              <NavLink className={navCls} to="/admin/users">      {Icons.users}      Manage Users</NavLink>
             </>
           )}
 
           {isCoordinator && (
             <>
-              <div className="nav-section">Coordinator</div>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/coordinator/dashboard">
-                {Icons.overview} Dashboard
-              </NavLink>
-              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/coordinator/growth-plans">
-                {Icons.milestone} Growth Plans
-              </NavLink>
+              <div className="nav-section">Development</div>
+              <NavLink className={navCls} to="/coordinator/dashboard">    {Icons.overview}   Dashboard</NavLink>
+              <NavLink className={navCls} to="/coordinator/growth-plans"> {Icons.growthplan} Growth Plans</NavLink>
             </>
           )}
         </nav>
 
+        {/* User footer */}
         <div className="sidebar-footer">
           <div className="user-info">
-            <div className="avatar">{initials}</div>
-            <div>
+            <div className="avatar" aria-hidden="true">{initials}</div>
+            <div className="min-w-0">
               <div className="user-name">{user?.name}</div>
-              <div className="user-role">{user?.role}</div>
+              <div className="user-role">{role}</div>
             </div>
           </div>
-          <button className="btn-logout" onClick={handleLogout}>Sign Out</button>
+          <button className="btn-logout" onClick={handleLogout} aria-label="Sign out">
+            Sign Out
+          </button>
         </div>
       </aside>
 

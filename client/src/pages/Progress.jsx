@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { RadialBarChart, RadialBar, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import ProgressBar from "../components/ProgressBar";
@@ -68,7 +67,7 @@ export default function Progress() {
           Object.entries(grouped).map(([typeCode, items]) => (
             <div key={typeCode} className="card" style={{ marginBottom: 20 }}>
               <div className="card-header">
-                <h3>{items[0]?.type_code.charAt(0).toUpperCase() + items[0]?.type_code.slice(1)}</h3>
+                <h3>{items[0]?.type_label || (items[0]?.type_code?.charAt(0).toUpperCase() + items[0]?.type_code?.slice(1))}</h3>
               </div>
               <div className="card-body">
                 {items.map(p => (

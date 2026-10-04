@@ -105,27 +105,14 @@ export default function Dashboard() {
       <div className="page-body">
 
         {/* ── Welcome banner ─────────────────────────────────────────────── */}
-        <div className="card" style={{
-          marginBottom: 24,
-          padding: "18px 24px",
-          borderLeft: "4px solid var(--primary)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
-        }}>
+        <div className="welcome-banner">
           <div>
-            <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--gray-900)" }}>
-              Welcome back, {user.name}
-            </div>
-            <div className="text-sm text-muted" style={{ marginTop: 2 }}>
-              Track your achievements, review milestone progress, and export your career profile.
-            </div>
+            <h3>Welcome back, {user.name}</h3>
+            <p>Track your achievements, review milestone progress, and export your career profile.</p>
           </div>
-          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-            <Link to="/milestones"  className="btn btn-secondary btn-sm">Milestones</Link>
-            <Link to="/progress"    className="btn btn-secondary btn-sm">My Progress</Link>
+          <div className="welcome-banner-actions">
+            <Link to="/milestones" className="btn btn-secondary btn-sm">Milestones</Link>
+            <Link to="/progress"   className="btn btn-secondary btn-sm">My Progress</Link>
           </div>
         </div>
 
@@ -265,63 +252,36 @@ export default function Dashboard() {
         <div className="grid-3">
           {[
             {
-              to:         "/milestones",
-              icon:       QuickIcons.milestones,
-              label:      "View Milestones",
-              sub:        "Check your career milestone requirements",
-              iconColor:  "var(--primary)",
-              iconBg:     "var(--primary-light)",
+              to:        "/milestones",
+              icon:      QuickIcons.milestones,
+              label:     "View Milestones",
+              sub:       "Check your career milestone requirements",
+              iconColor: "var(--primary)",
+              iconBg:    "var(--primary-light)",
             },
             {
-              to:         "/progress",
-              icon:       QuickIcons.progress,
-              label:      "My Progress",
-              sub:        "See how far you are toward each goal",
-              iconColor:  "var(--success)",
-              iconBg:     "var(--success-light)",
+              to:        "/progress",
+              icon:      QuickIcons.progress,
+              label:     "My Progress",
+              sub:       "See how far you are toward each goal",
+              iconColor: "var(--success)",
+              iconBg:    "var(--success-light)",
             },
             {
-              to:         "/report",
-              icon:       QuickIcons.report,
-              label:      "Generate Report",
-              sub:        "Export your career profile as PDF",
-              iconColor:  "var(--warning)",
-              iconBg:     "var(--warning-light)",
+              to:        "/report",
+              icon:      QuickIcons.report,
+              label:     "Career Report",
+              sub:       "Export your career profile as PDF",
+              iconColor: "var(--warning)",
+              iconBg:    "var(--warning-light)",
             },
           ].map(({ to, icon, label, sub, iconColor, iconBg }) => (
-            <Link
-              key={to}
-              to={to}
-              className="card"
-              style={{
-                padding: "20px 22px",
-                display: "block",
-                textDecoration: "none",
-                color: "inherit",
-                transition: "box-shadow 0.15s, transform 0.15s",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = "var(--shadow-md)";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = "";
-                e.currentTarget.style.transform = "";
-              }}
-            >
-              <div style={{
-                width: 40, height: 40, borderRadius: "var(--radius)",
-                background: iconBg,
-                color: iconColor,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                marginBottom: 12,
-              }}>
+            <Link key={to} to={to} className="quick-link-card">
+              <div className="quick-link-icon" style={{ background: iconBg, color: iconColor }}>
                 {icon}
               </div>
-              <div style={{ fontWeight: 600, marginBottom: 4, color: "var(--gray-900)" }}>
-                {label}
-              </div>
-              <div className="text-sm text-muted">{sub}</div>
+              <div className="quick-link-label">{label}</div>
+              <div className="quick-link-sub">{sub}</div>
             </Link>
           ))}
         </div>

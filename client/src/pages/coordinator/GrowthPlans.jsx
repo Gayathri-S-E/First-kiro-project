@@ -392,7 +392,7 @@ export default function GrowthPlans() {
                 </div>
               </div>
 
-              <div className="form-actions">
+              <div className="modal-footer">
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -428,7 +428,7 @@ export default function GrowthPlans() {
                 <strong>{deleteTarget.faculty_name}</strong>? This cannot be undone.
               </p>
             </div>
-            <div className="form-actions">
+            <div className="modal-footer">
               <button
                 className="btn btn-secondary"
                 onClick={() => setDeleteTarget(null)}
