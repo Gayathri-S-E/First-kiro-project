@@ -23,6 +23,9 @@ import FacultyProgress    from "./pages/admin/FacultyProgress";
 import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
 import GrowthPlans          from "./pages/coordinator/GrowthPlans";
 
+// Analytics (Lesson 8)
+import Analytics from "./pages/Analytics";
+
 // ─── Route guards ────────────────────────────────────────────────────────────
 
 function RequireAuth({ children }) {
@@ -103,6 +106,9 @@ function AppRoutes() {
       }/>
       <Route path="/report" element={
         <RequireFaculty><Layout><Report /></Layout></RequireFaculty>
+      }/>
+      <Route path="/analytics" element={
+        <RequireFaculty><Layout><Analytics /></Layout></RequireFaculty>
       }/>
 
       {/* Admin / HOD routes */}

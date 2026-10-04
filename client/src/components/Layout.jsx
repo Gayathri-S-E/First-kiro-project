@@ -51,6 +51,9 @@ export default function Layout({ children }) {
               <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/report">
                 {Icons.report} Generate Report
               </NavLink>
+              <NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/analytics">
+                {Icons.progress} Analytics
+              </NavLink>
             </>
           )}
 
