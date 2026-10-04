@@ -26,7 +26,7 @@ export default function CoordinatorDashboard() {
   }, []);
 
   if (loading) return <div className="loading"><div className="spinner" />Loading…</div>;
-  if (error)   return <div className="alert alert-danger">{error}</div>;
+  if (error)   return <div className="alert alert-error">{error}</div>;
 
   const { faculty_count, achievement_counts, milestone_count, faculty_progress } = data;
 
@@ -84,7 +84,7 @@ export default function CoordinatorDashboard() {
         {faculty_progress.length === 0 ? (
           <p className="empty-state">No faculty members found.</p>
         ) : (
-          <div className="table-wrapper">
+          <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
