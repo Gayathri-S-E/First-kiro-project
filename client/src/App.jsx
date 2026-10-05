@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 
 // Pages
 import Login              from "./pages/Login";
+import Home               from "./pages/Home";
 import Dashboard          from "./pages/Dashboard";
 import Achievements       from "./pages/Achievements";
 import AddEditAchievement from "./pages/AddEditAchievement";
@@ -65,11 +66,11 @@ function RequireCoordinator({ children }) {
   return children;
 }
 
-// RootRedirect: coordinator branch added before the faculty fallback.
+// RootRedirect: unauthenticated → /home; authenticated → role dashboard.
 function RootRedirect() {
   const { user, loading, isStaff, isCoordinator } = useAuth();
   if (loading)        return <div className="loading"><div className="spinner"/>Loading…</div>;
-  if (!user)          return <Navigate to="/login" replace />;
+  if (!user)          return <Navigate to="/home" replace />;
   if (isStaff)        return <Navigate to="/admin/overview" replace />;
   if (isCoordinator)  return <Navigate to="/coordinator/dashboard" replace />;
   return              <Navigate to="/dashboard" replace />;
@@ -81,6 +82,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/home"  element={<Home />} />
 
       {/* Root redirect */}
       <Route path="/" element={<RootRedirect />} />
