@@ -1,311 +1,234 @@
 /**
  * Home — /home
  *
- * Professional public landing page for FCAT.
- * No API calls. No mock data. Static illustrative card only.
+ * Public landing page for FCAT.
+ * Typography-led, centered hero. No fake data. No mock metrics.
+ * Sections: navbar · hero · purpose · roles · process · CTA · footer.
  */
 
 import React from "react";
 import { Link } from "react-router-dom";
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
+// ── Icons (inline SVG, no library) ────────────────────────────────────────────
 const IconBrand = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-       stroke="currentColor" strokeWidth="2" aria-hidden="true">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+       stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <circle cx="12" cy="8" r="6"/>
     <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
   </svg>
 );
 const IconArrow = () => (
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
        stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
     <line x1="5" y1="12" x2="19" y2="12"/>
     <polyline points="12 5 19 12 12 19"/>
   </svg>
 );
-const IconAchievement = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-       stroke="currentColor" strokeWidth="2" aria-hidden="true">
+const IconTrack = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+       stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
     <circle cx="12" cy="8" r="6"/>
     <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
   </svg>
 );
-const IconMilestone = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-       stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+const IconProgress = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+       stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d="M3 3v18h18"/>
+    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
   </svg>
 );
-const IconGrowth = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-       stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>
-  </svg>
-);
-const IconReport = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-       stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
+const IconDevelop = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+       stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
   </svg>
 );
 
-// ── Data ──────────────────────────────────────────────────────────────────────
-const FEATURES = [
+// ── Section data ───────────────────────────────────────────────────────────────
+const PURPOSE = [
   {
-    icon:  <IconAchievement />,
+    icon:  <IconTrack />,
     title: "Track Achievements",
-    desc:  "Publications, certifications, conferences, workshops, research projects, patents, and academic activities.",
+    desc:  "Record publications, certifications, conferences, workshops, research projects, patents, and academic activities in one structured place.",
   },
   {
-    icon:  <IconMilestone />,
-    title: "Monitor Milestones",
-    desc:  "Understand career progress against institution-defined milestones with clear visual indicators.",
+    icon:  <IconProgress />,
+    title: "Monitor Progress",
+    desc:  "Track career milestones and understand progress toward institution-defined advancement goals over time.",
   },
   {
-    icon:  <IconGrowth />,
-    title: "Manage Growth Plans",
-    desc:  "Support structured faculty professional development with coordinator-managed growth plans.",
-  },
-  {
-    icon:  <IconReport />,
-    title: "Generate Reports",
-    desc:  "Create clear progress and achievement reports as downloadable career profiles.",
+    icon:  <IconDevelop />,
+    title: "Support Development",
+    desc:  "Manage professional growth plans and support structured faculty development through a dedicated coordinator workflow.",
   },
 ];
 
 const ROLES = [
   {
-    key:   "faculty",
-    cls:   "rc-faculty",
-    icon:  "🎓",
-    label: "Academic Career",
-    title: "Faculty",
-    desc:  "Track achievements, career milestones, and progress toward institutional advancement goals.",
+    key:  "faculty",
+    cls:  "rf-faculty",
+    icon: "🎓",
+    tag:  "Academic Career",
+    name: "Faculty",
+    desc: "Track achievements, milestones, and career progress toward institutional advancement.",
   },
   {
-    key:   "coordinator",
-    cls:   "rc-coordinator",
-    icon:  "📋",
-    label: "Faculty Development",
-    title: "Coordinator",
-    desc:  "Manage faculty growth plans, monitor professional development, and support advancement.",
+    key:  "coordinator",
+    cls:  "rf-coordinator",
+    icon: "📋",
+    tag:  "Faculty Development",
+    name: "Coordinator",
+    desc: "Support faculty development and manage structured professional growth plans.",
   },
   {
-    key:   "admin",
-    cls:   "rc-admin",
-    icon:  "🏛️",
-    label: "Institutional Management",
-    title: "Admin / HOD",
-    desc:  "Manage users, verify achievement submissions, and oversee institutional career progress.",
+    key:  "admin",
+    cls:  "rf-admin",
+    icon: "🏛️",
+    tag:  "Institutional Management",
+    name: "Admin / HOD",
+    desc: "Manage users, verify achievements, and oversee institutional progress.",
   },
 ];
 
-const FLOW = [
-  { num: "01", label: "Record", title: "Add Achievements",  desc: "Log publications, certifications, conferences, and other professional activities with supporting evidence." },
-  { num: "02", label: "Track",  title: "Monitor Progress",  desc: "Visualise milestone progress and see exactly how close you are to each career target." },
-  { num: "03", label: "Grow",   title: "Develop Your Plan", desc: "Create and manage structured professional growth plans with coordinator support." },
-  { num: "04", label: "Report", title: "Generate Reports",  desc: "Export a complete career profile PDF with achievements, milestones, and progress." },
+const STEPS = [
+  { num: "01", verb: "Record",  title: "Add Achievements",   desc: "Log professional activities with supporting evidence." },
+  { num: "02", verb: "Track",   title: "Monitor Milestones", desc: "See progress against institution-defined career targets." },
+  { num: "03", verb: "Develop", title: "Support Growth",     desc: "Manage professional development through growth plans." },
+  { num: "04", verb: "Report",  title: "Review Progress",    desc: "Generate and share career achievement reports." },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Component ──────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
     <div className="home-page">
 
-      {/* ══ Header ══════════════════════════════════════════════════════════ */}
+      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
       <header className="home-header">
         <div className="home-header-inner">
           <span className="home-brand" aria-label="FCAT — Faculty Career Advancement Tracker">
-            <span className="home-brand-icon" aria-hidden="true">
-              <IconBrand />
-            </span>
+            <span className="home-brand-icon" aria-hidden="true"><IconBrand /></span>
             <span className="home-brand-text">
               <span className="home-brand-name">FCAT</span>
-              <span className="home-brand-tagline">Faculty Career Advancement Tracker</span>
+              <span className="home-brand-sub">Faculty Career Advancement Tracker</span>
             </span>
           </span>
-
-          <nav className="home-header-actions" aria-label="Site actions">
-            <Link to="/login"                 className="home-btn-outline">Sign In</Link>
-            <Link to="/login?mode=register"   className="home-btn-primary">Create Account</Link>
+          <nav className="home-header-nav" aria-label="Site navigation">
+            <Link to="/login"               className="hp-btn-ghost">Sign In</Link>
+            <Link to="/login?mode=register" className="hp-btn-solid">Create Account</Link>
           </nav>
         </div>
       </header>
 
-      {/* ══ Hero ════════════════════════════════════════════════════════════ */}
-      <section className="home-hero" aria-labelledby="hero-heading">
-        <div className="home-container">
-          <div className="home-hero-inner">
-
-            {/* Left */}
-            <div className="home-hero-left">
-              <div className="home-eyebrow" aria-hidden="true">
-                Faculty Career Management Platform
-              </div>
-              <p className="home-hero-kicker">Advance. Track. Grow.</p>
-              <h1 id="hero-heading">
-                Faculty Career<br />
-                <em>Advancement</em> Tracker
-              </h1>
-              <p className="home-hero-desc">
-                A centralized platform to track faculty achievements, monitor
-                career milestones, manage professional growth, and support
-                institutional advancement.
-              </p>
-              <div className="home-hero-cta">
-                <Link to="/login" className="home-btn-cta-primary">
-                  Sign In <IconArrow />
-                </Link>
-                <Link to="/login?mode=register" className="home-btn-cta-secondary">
-                  Create Account
-                </Link>
-              </div>
-            </div>
-
-            {/* Right — Career progress illustration card */}
-            {/* NOTE: values below are illustrative UI content only, not real data */}
-            <div className="home-hero-right" aria-hidden="true">
-              <div className="hero-card">
-                <div className="hero-card-title">Career Progress Overview</div>
-
-                <div className="hero-progress-row">
-                  <div className="hero-progress-label">
-                    <span>Overall Progress</span>
-                    <span>72%</span>
-                  </div>
-                  <div className="hero-progress-track">
-                    <div className="hero-progress-fill" style={{ width: "72%" }} />
-                  </div>
-                </div>
-
-                <div className="hero-stats">
-                  <div className="hero-stat">
-                    <div className="hero-stat-value">18</div>
-                    <div className="hero-stat-label">Achievements</div>
-                  </div>
-                  <div className="hero-stat">
-                    <div className="hero-stat-value">6</div>
-                    <div className="hero-stat-label">Milestones</div>
-                  </div>
-                  <div className="hero-stat">
-                    <div className="hero-stat-value">2</div>
-                    <div className="hero-stat-label">Growth Plans</div>
-                  </div>
-                </div>
-
-                <div className="hero-status">On Track</div>
-                <p className="hero-card-note">Illustrative example only</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ══ Trust strip ═════════════════════════════════════════════════════ */}
-      <div className="home-trust" role="presentation">
-        <div className="home-container">
-          <div className="home-trust-inner">
-            <span className="home-trust-label">Built for faculty. Designed for institutional growth.</span>
-            <span className="home-trust-item"><span className="home-trust-dot" />Achievement Tracking</span>
-            <span className="home-trust-item"><span className="home-trust-dot" />Career Milestones</span>
-            <span className="home-trust-item"><span className="home-trust-dot" />Faculty Development</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ Features ════════════════════════════════════════════════════════ */}
-      <section className="home-section" aria-labelledby="features-heading">
-        <div className="home-section-inner">
-          <div className="home-section-header">
-            <span className="home-section-eyebrow">Platform Capabilities</span>
-            <h2 id="features-heading">Everything you need to manage career advancement</h2>
-            <p>
-              FCAT brings together achievement tracking, milestone management,
-              and institutional reporting into a single professional platform.
-            </p>
-          </div>
-          <div className="home-features-grid">
-            {FEATURES.map(({ icon, title, desc }) => (
-              <article key={title} className="home-feature-card">
-                <div className="home-feature-icon">{icon}</div>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ Roles ═══════════════════════════════════════════════════════════ */}
-      <section className="home-section home-section-alt" aria-labelledby="roles-heading">
-        <div className="home-section-inner">
-          <div className="home-section-header">
-            <span className="home-section-eyebrow">User Roles</span>
-            <h2 id="roles-heading">Designed for every role in the advancement ecosystem</h2>
-            <p>
-              FCAT provides a tailored experience for each participant in the
-              faculty career advancement process.
-            </p>
-          </div>
-          <div className="home-roles-grid">
-            {ROLES.map(({ key, cls, icon, label, title, desc }) => (
-              <article key={key} className={`home-role-card ${cls}`}>
-                <div className="home-role-icon" aria-hidden="true">{icon}</div>
-                <p className="home-role-label">{label}</p>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ Career Flow ═════════════════════════════════════════════════════ */}
-      <section className="home-section" aria-labelledby="flow-heading">
-        <div className="home-section-inner">
-          <div className="home-section-header">
-            <span className="home-section-eyebrow">How It Works</span>
-            <h2 id="flow-heading">A clear path from achievement to advancement</h2>
-          </div>
-          <div className="home-flow-grid">
-            {FLOW.map(({ num, label, title, desc }) => (
-              <div key={num} className="home-flow-step">
-                <div className="home-flow-number" aria-hidden="true">{num}</div>
-                <div>
-                  <p className="home-flow-step-label">{label}</p>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ Final CTA ═══════════════════════════════════════════════════════ */}
-      <section className="home-cta-section" aria-labelledby="cta-heading">
-        <div className="home-cta-inner">
-          <h2 id="cta-heading">Start tracking your career advancement</h2>
-          <p>
-            Bring achievements, milestones, and professional growth together
-            in one platform built for academic institutions.
+      {/* ── Hero ───────────────────────────────────────────────────────────── */}
+      <section className="home-hero" aria-labelledby="fcat-title">
+        <div className="home-wrap-narrow">
+          <p className="home-hero-label" aria-hidden="true">
+            Faculty Career Management Platform
           </p>
-          <div className="home-cta-actions">
-            <Link to="/login?mode=register" className="home-btn-cta-white">
+          <h1 id="fcat-title">Faculty Career<br />Advancement Tracker</h1>
+          <p className="home-hero-desc">
+            A centralized platform to record faculty achievements, track career
+            milestones, and support professional growth.
+          </p>
+          <p className="home-hero-desc2">
+            Designed to bring career progress, professional development, and
+            institutional tracking into one place.
+          </p>
+          <div className="home-hero-actions">
+            <Link to="/login" className="hp-btn-cta">
+              Sign In <IconArrow />
+            </Link>
+            <Link to="/login?mode=register" className="hp-btn-cta-outline">
               Create Account
             </Link>
-            <Link to="/login" className="home-btn-cta-ghost">
+          </div>
+        </div>
+      </section>
+
+      {/* ── Purpose ────────────────────────────────────────────────────────── */}
+      <section className="home-purpose" aria-labelledby="purpose-heading">
+        <div className="home-wrap">
+          <h2 className="home-purpose-heading" id="purpose-heading">
+            Built to support faculty career growth
+          </h2>
+          <p className="home-purpose-lead">
+            FCAT brings achievements, milestones, professional development, and
+            progress tracking together in one structured platform.
+          </p>
+          <div className="home-purpose-cols">
+            {PURPOSE.map(({ icon, title, desc }) => (
+              <div key={title} className="home-purpose-col">
+                <div className="home-purpose-col-icon" aria-hidden="true">{icon}</div>
+                <h3>{title}</h3>
+                <p>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Roles ──────────────────────────────────────────────────────────── */}
+      <section className="home-roles" aria-labelledby="roles-heading">
+        <div className="home-wrap">
+          <span className="home-roles-eyebrow" aria-hidden="true">User Roles</span>
+          <h2 className="home-roles-heading" id="roles-heading">
+            Who uses FCAT?
+          </h2>
+          <div className="home-roles-cols">
+            {ROLES.map(({ key, cls, icon, tag, name, desc }) => (
+              <article key={key} className={`home-role-col ${cls}`}>
+                <span className="home-role-col-icon" aria-hidden="true">{icon}</span>
+                <h3>{name}</h3>
+                <span className="home-role-col-tag">{tag}</span>
+                <p>{desc}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Process ────────────────────────────────────────────────────────── */}
+      <section className="home-process" aria-labelledby="process-heading">
+        <div className="home-wrap">
+          <h2 className="home-process-heading" id="process-heading">
+            From achievement to advancement
+          </h2>
+          <div className="home-process-steps">
+            {STEPS.map(({ num, verb, title, desc }) => (
+              <div key={num} className="home-process-step">
+                <p className="home-step-num">{num} — {verb}</p>
+                <h3>{title}</h3>
+                <p>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ────────────────────────────────────────────────────────────── */}
+      <section className="home-cta" aria-labelledby="cta-heading">
+        <div className="home-wrap-narrow">
+          <h2 id="cta-heading">Ready to start tracking your career progress?</h2>
+          <p>
+            Create your FCAT account and begin organizing your professional
+            journey.
+          </p>
+          <div className="home-cta-btns">
+            <Link to="/login?mode=register" className="hp-btn-cta-inv">
+              Create Account
+            </Link>
+            <Link to="/login" className="hp-btn-cta-inv-ghost">
               Sign In
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ══ Footer ══════════════════════════════════════════════════════════ */}
+      {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="home-footer">
         <div className="home-footer-brand">
           <span className="home-footer-name">FCAT</span>
