@@ -1,67 +1,89 @@
 /**
  * Login — /login
  *
- * Handles both Sign In and Create Account in a single tabbed card.
- * Arriving with ?mode=register pre-opens the registration tab (used by Home.jsx).
- *
- * NOTHING changed in the auth API calls, validation, or post-login navigation.
- * The only additions are:
- *   • useSearchParams to read ?mode=register
- *   • role field added to form state (was missing before; backend already expects it)
- *   • RoleSelector component replacing the old free-text role field
+ * Authentication page: Sign In and Create Account.
+ * All API calls, validation, and post-login navigation are unchanged.
+ * Only the visual presentation has been redesigned.
  */
 
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// ── Inline SVG icons (no external library) ────────────────────────────────────
+const IconFaculty = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+       stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+  </svg>
+);
+
+const IconLock = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
+       stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0110 0v4"/>
+  </svg>
+);
+
+const IconBrand = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+       stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+  </svg>
+);
+
+// ── Demo accounts for testing ─────────────────────────────────────────────────
+// Fills the login form fields only — user must still click Sign In.
+// These accounts must exist in the DB (created via npm run seed).
+const DEMO_ACCOUNTS = [
+  { role: "Faculty",      label: "Faculty",      email: "priya@fcat.edu",              password: "faculty123" },
+  { role: "Coordinator",  label: "Coordinator",  email: "coordinator@demo.fcat.edu",   password: "demo1234"   },
+  { role: "Admin / HOD",  label: "Admin / HOD",  email: "admin@fcat.edu",              password: "admin123"   },
+];
+
 // ── Role definitions ──────────────────────────────────────────────────────────
-// `value` must match the exact string the backend accepts.
-// Faculty self-registers; coordinator/admin accounts are admin-created.
+// selfReg: true  → selectable via radio
+// selfReg: false → informational only, no radio input, no pointer events
 const ROLES = [
   {
     value:   "faculty",
-    icon:    "🎓",
     label:   "Faculty",
     desc:    "Self-register and track your career",
     selfReg: true,
   },
   {
     value:   "coordinator",
-    icon:    "📋",
     label:   "Coordinator",
-    desc:    "Created by an administrator",
+    desc:    "Account created by an administrator",
     selfReg: false,
   },
   {
     value:   "admin",
-    icon:    "🏛️",
     label:   "Admin / HOD",
-    desc:    "Created by an administrator",
+    desc:    "Account created by an administrator",
     selfReg: false,
   },
 ];
 
-// ── RoleSelector component ────────────────────────────────────────────────────
-// Only Faculty is selectable — coordinator and admin accounts must be
-// created by an existing administrator, so those cards are informational only.
+// ── RoleSelector ──────────────────────────────────────────────────────────────
 function RoleSelector({ value, onChange }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <span className="role-selector-label">
-        Your Role <span className="required">*</span>
-      </span>
+    <fieldset className="auth-role-fieldset">
+      <legend className="auth-role-legend">
+        Your Role <span className="required" aria-hidden="true">*</span>
+      </legend>
 
-      <div className="role-options" role="radiogroup" aria-label="Select your role">
-        {ROLES.map(({ value: rv, icon, label, desc, selfReg }) => {
+      <div className="auth-role-grid" role="radiogroup" aria-label="Select your role">
+        {ROLES.map(({ value: rv, label, desc, selfReg }) => {
           if (selfReg) {
-            // ── Selectable card (Faculty only) ──────────────────────────────
             return (
               <label
                 key={rv}
-                className="role-option"
+                className={`auth-role-card auth-role-selectable${value === rv ? " auth-role-selected" : ""}`}
                 data-role={rv}
-                title={desc}
               >
                 <input
                   type="radio"
@@ -70,36 +92,39 @@ function RoleSelector({ value, onChange }) {
                   checked={value === rv}
                   onChange={() => onChange(rv)}
                   aria-label={label}
+                  className="auth-role-radio"
                 />
-                <span className="role-option-inner">
-                  <span className="role-option-icon" aria-hidden="true">{icon}</span>
-                  <span className="role-option-name">{label}</span>
-                  <span className="role-option-desc">{desc}</span>
+                <span className="auth-role-card-icon" aria-hidden="true">
+                  <IconFaculty />
                 </span>
+                <span className="auth-role-card-name">{label}</span>
+                <span className="auth-role-card-desc">{desc}</span>
+                {value === rv && (
+                  <span className="auth-role-selected-dot" aria-hidden="true" />
+                )}
               </label>
             );
           }
 
-          // ── Informational card (Coordinator / Admin·HOD) ────────────────
-          // Not a label, no radio — purely decorative / informational.
+          // Informational card — no radio, no pointer-events
           return (
             <div
               key={rv}
-              className="role-option role-option-locked"
+              className="auth-role-card auth-role-managed"
               data-role={rv}
               aria-label={`${label} — ${desc}`}
-              title={desc}
             >
-              <span className="role-option-inner">
-                <span className="role-option-icon" aria-hidden="true">{icon}</span>
-                <span className="role-option-name">{label}</span>
-                <span className="role-option-desc">{desc}</span>
+              <span className="auth-role-card-icon auth-role-card-icon-muted" aria-hidden="true">
+                <IconLock />
               </span>
+              <span className="auth-role-card-name">{label}</span>
+              <span className="auth-role-card-desc">{desc}</span>
+              <span className="auth-managed-badge" aria-hidden="true">Admin managed</span>
             </div>
           );
         })}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -109,7 +134,6 @@ export default function Login() {
   const navigate             = useNavigate();
   const [searchParams]       = useSearchParams();
 
-  // Pre-open register tab if arriving from Home's "Create Account" button
   const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
   const [mode, setMode] = useState(initialMode);
 
@@ -119,24 +143,29 @@ export default function Login() {
     password:    "",
     department:  "",
     designation: "",
-    role:        "faculty",   // default selection
+    role:        "faculty",
   });
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Generic field handler
-  const handle = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-
-  // Role selector handler
+  const handle     = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   const handleRole = (role) => setForm(f => ({ ...f, role }));
 
   const switchMode = (next) => {
     setMode(next);
     setError("");
-    setForm(f => ({ ...f, role: "faculty" })); // reset role on tab switch
+    setForm(f => ({ ...f, role: "faculty" }));
   };
 
-  // ── Submit — identical logic to before, role is now included in form ────────
+  // Fill login fields with a demo account credential.
+  // Does NOT log the user in — they must still click Sign In.
+  const useDemoAccount = (email, password) => {
+    if (mode !== "login") switchMode("login");
+    setForm(f => ({ ...f, email, password }));
+    setError("");
+  };
+
+  // Submit — all API logic unchanged
   const submit = async (e) => {
     e.preventDefault();
     setError("");
@@ -146,49 +175,43 @@ export default function Login() {
       if (mode === "login") {
         user = await login(form.email, form.password);
       } else {
-        if (!form.name) {
-          setError("Full name is required");
-          setLoading(false);
-          return;
-        }
-        user = await register(form); // role is now sent in the payload
+        if (!form.name) { setError("Full name is required"); setLoading(false); return; }
+        user = await register(form);
       }
-      // Post-login navigation — unchanged
-      if (["admin", "hod"].includes(user.role))     navigate("/admin/overview");
-      else if (user.role === "coordinator")          navigate("/coordinator/dashboard");
-      else                                           navigate("/dashboard");
+      if (["admin", "hod"].includes(user.role)) navigate("/admin/overview");
+      else if (user.role === "coordinator")      navigate("/coordinator/dashboard");
+      else                                       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong");
+      // Show the real backend error message, or a meaningful network error.
+      const msg = err.response?.data?.error
+               || err.response?.data?.message
+               || (err.response ? `Server error ${err.response.status}` : "Cannot reach the server — is the backend running?");
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // Card is slightly wider in register mode to accommodate the role selector
-  const cardClass = `login-card${mode === "register" ? " login-card-wide" : ""}`;
-
   return (
-    <div className="login-page">
-      <div className={cardClass}>
+    <div className="auth-page">
+      <div className={`auth-card${mode === "register" ? " auth-card-wide" : ""}`}>
 
-        {/* ── Logo + title ────────────────────────────────────────────── */}
-        <div className="login-header">
-          <div className="logo-icon" aria-hidden="true">🎓</div>
-          <h1>Faculty Career Tracker</h1>
-          <p>Track achievements, milestones &amp; career growth</p>
+        {/* ── Brand mark ─────────────────────────────────────────────── */}
+        <div className="auth-brand">
+          <span className="auth-brand-mark" aria-hidden="true">
+            <IconBrand />
+          </span>
+          <div className="auth-brand-text">
+            <span className="auth-brand-name">Faculty Career Advancement Tracker</span>
+            <span className="auth-brand-sub">Track achievements, milestones &amp; career growth</span>
+          </div>
         </div>
 
-        {/* ── Mode tabs ───────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            borderBottom: "1px solid var(--gray-200)",
-            marginBottom: 22,
-            gap: 0,
-          }}
-          role="tablist"
-          aria-label="Authentication mode"
-        >
+        {/* ── Divider ─────────────────────────────────────────────────── */}
+        <hr className="auth-divider" />
+
+        {/* ── Tabs ────────────────────────────────────────────────────── */}
+        <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
           {[
             { key: "login",    label: "Sign In" },
             { key: "register", label: "Create Account" },
@@ -197,31 +220,16 @@ export default function Login() {
               key={key}
               role="tab"
               aria-selected={mode === key}
+              className={`auth-tab${mode === key ? " auth-tab-active" : ""}`}
               onClick={() => switchMode(key)}
-              style={{
-                flex: 1,
-                padding: "8px 0",
-                background: "none",
-                border: "none",
-                borderBottom: mode === key
-                  ? "2px solid var(--primary)"
-                  : "2px solid transparent",
-                color: mode === key ? "var(--primary)" : "var(--gray-500)",
-                fontWeight: mode === key ? 700 : 500,
-                fontSize: "0.875rem",
-                cursor: "pointer",
-                transition: "color 0.12s, border-color 0.12s",
-                fontFamily: "var(--font)",
-                letterSpacing: "0.01em",
-                marginBottom: "-1px",   /* sit on top of the border */
-              }}
+              type="button"
             >
               {label}
             </button>
           ))}
         </div>
 
-        {/* ── Error alert ─────────────────────────────────────────────── */}
+        {/* ── Error ───────────────────────────────────────────────────── */}
         {error && (
           <div className="alert alert-error" role="alert">{error}</div>
         )}
@@ -229,153 +237,120 @@ export default function Login() {
         {/* ── Form ────────────────────────────────────────────────────── */}
         <form onSubmit={submit} noValidate>
 
-          {/* Register-only fields */}
           {mode === "register" && (
             <>
-              {/* Role selector — replaces old free-text role */}
               <RoleSelector value={form.role} onChange={handleRole} />
 
-              <div className="form-group" style={{ marginBottom: 14 }}>
-                <label htmlFor="reg-name">
+              <div className="auth-field">
+                <label htmlFor="reg-name" className="auth-label">
                   Full Name <span className="required">*</span>
                 </label>
                 <input
-                  id="reg-name"
-                  name="name"
-                  type="text"
-                  value={form.name}
-                  onChange={handle}
+                  id="reg-name" name="name" type="text"
+                  value={form.name} onChange={handle}
                   placeholder="Dr. Jane Smith"
-                  autoComplete="name"
-                  required
+                  autoComplete="name" required
+                  className="auth-input"
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: 14 }}>
-                <label htmlFor="reg-dept">Department</label>
+              <div className="auth-field">
+                <label htmlFor="reg-dept" className="auth-label">Department</label>
                 <input
-                  id="reg-dept"
-                  name="department"
-                  type="text"
-                  value={form.department}
-                  onChange={handle}
+                  id="reg-dept" name="department" type="text"
+                  value={form.department} onChange={handle}
                   placeholder="e.g. Computer Science"
+                  className="auth-input"
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: 14 }}>
-                <label htmlFor="reg-desig">Designation</label>
+              <div className="auth-field">
+                <label htmlFor="reg-desig" className="auth-label">Designation</label>
                 <input
-                  id="reg-desig"
-                  name="designation"
-                  type="text"
-                  value={form.designation}
-                  onChange={handle}
+                  id="reg-desig" name="designation" type="text"
+                  value={form.designation} onChange={handle}
                   placeholder="e.g. Assistant Professor"
+                  className="auth-input"
                 />
               </div>
             </>
           )}
 
-          {/* Shared fields */}
-          <div className="form-group" style={{ marginBottom: 14 }}>
-            <label htmlFor="auth-email">
+          <div className="auth-field">
+            <label htmlFor="auth-email" className="auth-label">
               Email <span className="required">*</span>
             </label>
             <input
-              id="auth-email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handle}
+              id="auth-email" name="email" type="email"
+              value={form.email} onChange={handle}
               placeholder="you@institution.edu"
               autoComplete={mode === "login" ? "username" : "email"}
-              required
-              autoFocus={mode === "login"}
+              required autoFocus={mode === "login"}
+              className="auth-input"
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: 22 }}>
-            <label htmlFor="auth-password">
+          <div className="auth-field auth-field-last">
+            <label htmlFor="auth-password" className="auth-label">
               Password <span className="required">*</span>
             </label>
             <input
-              id="auth-password"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handle}
+              id="auth-password" name="password" type="password"
+              value={form.password} onChange={handle}
               placeholder="••••••••"
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               required
+              className="auth-input"
             />
           </div>
 
           <button
-            className="btn btn-primary btn-lg"
-            style={{ width: "100%" }}
             type="submit"
+            className="auth-submit"
             disabled={loading}
           >
-            {loading
-              ? "Please wait…"
-              : mode === "login"
-                ? "Sign In"
-                : "Create Account"}
+            {loading ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
 
-        {/* ── Mode switcher (below form) ───────────────────────────────── */}
-        <div style={{
-          textAlign: "center",
-          marginTop: 18,
-          fontSize: "0.84rem",
-          color: "var(--gray-500)",
-        }}>
+        {/* ── Mode switcher ───────────────────────────────────────────── */}
+        <p className="auth-switch">
           {mode === "login" ? (
-            <>
-              Don&apos;t have an account?{" "}
-              <button
-                style={{
-                  background: "none", border: "none",
-                  color: "var(--primary)", cursor: "pointer",
-                  fontWeight: 600, fontFamily: "var(--font)", fontSize: "inherit",
-                }}
-                onClick={() => switchMode("register")}
-              >
+            <>Don&apos;t have an account?{" "}
+              <button className="auth-switch-btn" onClick={() => switchMode("register")} type="button">
                 Create Account
               </button>
             </>
           ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                style={{
-                  background: "none", border: "none",
-                  color: "var(--primary)", cursor: "pointer",
-                  fontWeight: 600, fontFamily: "var(--font)", fontSize: "inherit",
-                }}
-                onClick={() => switchMode("login")}
-              >
+            <>Already have an account?{" "}
+              <button className="auth-switch-btn" onClick={() => switchMode("login")} type="button">
                 Sign In
               </button>
             </>
           )}
-        </div>
+        </p>
 
-        {/* ── Demo credentials hint ────────────────────────────────────── */}
-        <div style={{
-          marginTop: 22,
-          padding: "11px 14px",
-          background: "var(--gray-50)",
-          borderRadius: "var(--radius)",
-          fontSize: "0.73rem",
-          color: "var(--gray-500)",
-          lineHeight: 1.6,
-        }}>
-          <strong style={{ color: "var(--gray-700)" }}>Demo accounts:</strong><br />
-          admin@fcat.edu / admin123 &nbsp;·&nbsp; hod@fcat.edu / hod123<br />
-          priya@fcat.edu / faculty123 &nbsp;·&nbsp; arjun@fcat.edu / faculty123
+        {/* ── Demo accounts panel ─────────────────────────────────────── */}
+        {/* Development / testing only. Fills email + password fields.     */}
+        {/* User must still click Sign In — no auth bypass.                */}
+        <div className="demo-panel">
+          <p className="demo-panel-label">Test Accounts</p>
+          <div className="demo-panel-rows">
+            {DEMO_ACCOUNTS.map(({ role, label, email, password }) => (
+              <div key={role} className="demo-panel-row">
+                <span className="demo-panel-role">{label}</span>
+                <span className="demo-panel-email">{email}</span>
+                <button
+                  type="button"
+                  className="demo-panel-btn"
+                  onClick={() => useDemoAccount(email, password)}
+                  aria-label={`Use demo ${label} account`}
+                >
+                  Use
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
