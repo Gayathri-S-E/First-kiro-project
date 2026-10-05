@@ -9,11 +9,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Redirect to login on 401
+// Redirect to login on 401 — but only when not already on the login page
+// and not when the failed request itself was an auth endpoint (login/me).
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    const isLoginPage = window.location.pathname === "/login"
+                     || window.location.pathname === "/home"
+                     || window.location.pathname === "/";
+    const isAuthEndpoint = err.config?.url?.includes("/auth/");
+
+    if (err.response?.status === 401 && !isLoginPage && !isAuthEndpoint) {
       localStorage.removeItem("fcat_token");
       localStorage.removeItem("fcat_user");
       window.location.href = "/login";
