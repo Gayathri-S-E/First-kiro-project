@@ -16,6 +16,52 @@ router.get("/", authenticate, (_req, res) => {
   res.json({ milestones });
 });
 
+// GET /api/milestones/progress/:userId — compute milestone progress for a faculty member
+// MUST be declared before /:id to prevent Express matching "progress" as an id.
+router.get("/progress/:userId", authenticate, (req, res) => {
+  const targetId = Number(req.params.userId);
+
+  // Faculty can only see their own progress
+  if (req.user.role === "faculty" && req.user.id !== targetId) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  const user = db.get("SELECT id, name, department, designation FROM users WHERE id = ?", [targetId]);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const milestones = db.all("SELECT * FROM milestone_templates ORDER BY type_code, name");
+
+  const progress = milestones.map((m) => {
+    let countQuery =
+      "SELECT COUNT(*) as cnt FROM achievements WHERE user_id = ? AND type_code = ? AND status = 'approved'";
+    const params = [targetId, m.type_code];
+
+    // If a time window is set, restrict to that window
+    if (m.time_window_months) {
+      countQuery += " AND date_achieved >= date('now', ? || ' months')";
+      params.push(`-${m.time_window_months}`);
+    }
+
+    const row     = db.get(countQuery, params);
+    const current = row ? row.cnt : 0;
+    const achieved = current >= m.required_count;
+
+    return {
+      milestone_id:    m.id,
+      milestone_name:  m.name,
+      description:     m.description,
+      type_code:       m.type_code,
+      required_count:  m.required_count,
+      time_window_months: m.time_window_months,
+      current_count:   current,
+      percentage:      Math.min(100, Math.round((current / m.required_count) * 100)),
+      achieved,
+    };
+  });
+
+  res.json({ user, progress });
+});
+
 // GET /api/milestones/:id
 router.get("/:id", authenticate, (req, res) => {
   const m = db.get(
@@ -84,51 +130,6 @@ router.delete("/:id", authenticate, requireRole("admin", "hod"), (req, res) => {
   if (!m) return res.status(404).json({ error: "Milestone not found" });
   db.run("DELETE FROM milestone_templates WHERE id = ?", [m.id]);
   res.json({ success: true });
-});
-
-// GET /api/milestones/progress/:userId — compute milestone progress for a faculty member
-router.get("/progress/:userId", authenticate, (req, res) => {
-  const targetId = Number(req.params.userId);
-
-  // Faculty can only see their own progress
-  if (req.user.role === "faculty" && req.user.id !== targetId) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-
-  const user = db.get("SELECT id, name, department, designation FROM users WHERE id = ?", [targetId]);
-  if (!user) return res.status(404).json({ error: "User not found" });
-
-  const milestones = db.all("SELECT * FROM milestone_templates ORDER BY type_code, name");
-
-  const progress = milestones.map((m) => {
-    let countQuery =
-      "SELECT COUNT(*) as cnt FROM achievements WHERE user_id = ? AND type_code = ? AND status = 'approved'";
-    const params = [targetId, m.type_code];
-
-    // If a time window is set, restrict to that window
-    if (m.time_window_months) {
-      countQuery += " AND date_achieved >= date('now', ? || ' months')";
-      params.push(`-${m.time_window_months}`);
-    }
-
-    const row     = db.get(countQuery, params);
-    const current = row ? row.cnt : 0;
-    const achieved = current >= m.required_count;
-
-    return {
-      milestone_id:    m.id,
-      milestone_name:  m.name,
-      description:     m.description,
-      type_code:       m.type_code,
-      required_count:  m.required_count,
-      time_window_months: m.time_window_months,
-      current_count:   current,
-      percentage:      Math.min(100, Math.round((current / m.required_count) * 100)),
-      achieved,
-    };
-  });
-
-  res.json({ user, progress });
 });
 
 module.exports = router;
