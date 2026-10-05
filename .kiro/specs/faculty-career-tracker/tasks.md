@@ -51,6 +51,14 @@ Confirm the dev environment starts cleanly and the seed pipeline works.
 - [ ] **3.1** `POST /api/achievements` with `title` and `type_code` → HTTP 201, `status = "pending"`.
 - [ ] **3.2** `POST /api/achievements` without `title` → HTTP 400.
 - [ ] **3.3** `POST /api/achievements` with an invalid `type_code` → HTTP 400.
+- [ ] **3-PBT** Property-based verification of the type_code validation invariant
+      (REQ-ACH-2). Three universal properties tested via `fast-check` against the
+      in-memory DB:
+      - P1 (VALID-ACCEPTED): ∀ `code ∈ achievement_types.code` → validation accepts it.
+      - P2 (INVALID-REJECTED): ∀ arbitrary string ∉ valid set → validation rejects it.
+      - P3 (AUTHORITATIVE-SET): accepted set equals exactly the 7 DB-seeded codes.
+      - P4 (MUTATION): temporarily removing a type exposes the broken invariant.
+      See `server/src/__tests__/achievement-type-validation.test.js`.
 - [ ] **3.4** `GET /api/achievements` as faculty → returns only that faculty member's own records.
 - [ ] **3.5** `GET /api/achievements` as admin/hod → returns all records across users.
 - [ ] **3.6** `GET /api/achievements?type_code=publication&status=pending` → filtered results.
