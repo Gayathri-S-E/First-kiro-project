@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "/api" });
+const rawBase = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://first-kiro-project.onrender.com/api" : "/api");
+const cleanBase = rawBase.replace(/\/+$/, "");
+const baseURL = cleanBase.endsWith("/api") ? cleanBase : `${cleanBase}/api`;
+
+const api = axios.create({ baseURL });
 
 // Attach JWT token from localStorage on every request
 api.interceptors.request.use((config) => {
