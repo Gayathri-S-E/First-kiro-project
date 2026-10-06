@@ -23,7 +23,8 @@ app.use("/api/admin",        require("./routes/admin"));
 app.use("/api/reports",      require("./routes/reports"));
 app.use("/api/coordinator",  require("./routes/coordinator"));
 
-// Health check
+// Health check & root endpoint
+app.get("/", (_req, res) => res.json({ status: "ok", message: "FCAT backend is running" }));
 app.get("/api/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
 
 // ─── Serve React build in production ────────────────────────────────────────
