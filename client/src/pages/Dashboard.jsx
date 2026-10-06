@@ -49,12 +49,19 @@ const QuickIcons = {
 export default function Dashboard() {
   const { user }             = useAuth();
   const [stats,   setStats]  = useState(null);
+  const [milestones, setMilestones] = useState(null);
   const [loading, setLoading]= useState(true);
   const [error,   setError]  = useState(null);
 
   useEffect(() => {
-    api.get(`/reports/dashboard/${user.id}`)
-      .then(({ data }) => setStats(data))
+    Promise.all([
+      api.get(`/reports/dashboard/${user.id}`),
+      api.get(`/milestones/progress/${user.id}`).catch(() => ({ data: { progress: [] } })),
+    ])
+      .then(([dashRes, mileRes]) => {
+        setStats(dashRes.data);
+        setMilestones(mileRes.data?.progress || []);
+      })
       .catch(() => setError("Failed to load dashboard data"))
       .finally(() => setLoading(false));
   }, [user.id]);
@@ -76,6 +83,10 @@ export default function Dashboard() {
   const approved = statusMap.approved || 0;
   const pending  = statusMap.pending  || 0;
   const rejected = statusMap.rejected || 0;
+
+  // Derive milestone completion from real API data
+  const completedMilestones = (milestones || []).filter(m => m.achieved).length;
+  const totalMilestones     = (milestones || []).length;
 
   const hasChartData   = (stats?.typeCounts  || []).length > 0;
   const hasMonthlyData = (stats?.monthly     || []).length > 0;
@@ -116,7 +127,41 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── Career Snapshot ────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 24 }}>
+          <div className="section-label">Career Snapshot</div>
+          <div className="stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 0 }}>
+            <div className="stat-card accent-primary">
+              <div className="stat-label">Total Achievements</div>
+              <div className="stat-value">{total}</div>
+              <div className="stat-sub">Across all categories</div>
+            </div>
+            <div className="stat-card accent-success">
+              <div className="stat-label">Verified Achievements</div>
+              <div className="stat-value" style={{ color: "var(--success)" }}>{approved}</div>
+              <div className="stat-sub">Approved by HOD / Admin</div>
+            </div>
+            <div className="stat-card accent-warning">
+              <div className="stat-label">Completed Milestones</div>
+              <div className="stat-value" style={{ color: "var(--warning)" }}>
+                {completedMilestones}
+                {totalMilestones > 0 && (
+                  <span style={{ fontSize: "1rem", fontWeight: 500, color: "var(--gray-400)", marginLeft: 4 }}>
+                    / {totalMilestones}
+                  </span>
+                )}
+              </div>
+              <div className="stat-sub">
+                {totalMilestones > 0
+                  ? `${Math.round((completedMilestones / totalMilestones) * 100)}% milestone progress`
+                  : "Career goals tracked"}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ── Status stat cards ──────────────────────────────────────────── */}
+        <div className="section-label">Submission & Review Status</div>
         <div className="stats-grid" style={{ marginBottom: 24 }}>
           <div className="stat-card">
             <div className="stat-label">Total Submitted</div>
